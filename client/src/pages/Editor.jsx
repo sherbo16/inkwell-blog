@@ -1,0 +1,11 @@
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import api from '../lib/api';
+
+export default function Editor() {
+  const { id } = useParams(); const editing = Boolean(id); const navigate = useNavigate(); const [form, setForm] = useState({ title: '', excerpt: '', category: 'Reflections', content: '' }); const [coverImage, setCoverImage] = useState(null); const [error, setError] = useState('');
+  useEffect(() => { if (editing) api.get(`/posts/${id}`).then(({ data }) => setForm(data.post)); }, [editing, id]);
+  const change = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const submit = async (e) => { e.preventDefault(); setError(''); const data = new FormData(); Object.entries(form).forEach(([key, value]) => data.append(key, value)); if (coverImage) data.append('coverImage', coverImage); try { const response = editing ? await api.patch(`/posts/${id}`, data) : await api.post('/posts', data); navigate(`/posts/${response.data.post._id}`); } catch (err) { setError(err.response?.data?.message || 'Unable to save story.'); } };
+  return <div className="mx-auto max-w-3xl"><p className="text-sm font-bold uppercase tracking-widest text-coral">{editing ? 'Edit your story' : 'Your writing studio'}</p><h1 className="mt-3 font-display text-5xl">{editing ? 'Shape it until it sings.' : 'What is on your mind?'}</h1><form onSubmit={submit} className="mt-10 space-y-5 rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-100"><input className="field text-2xl font-display" name="title" value={form.title} onChange={change} placeholder="A thoughtful title..." required /><input className="field" name="excerpt" value={form.excerpt} onChange={change} placeholder="A short introduction..." required /><div className="grid gap-5 sm:grid-cols-2"><input className="field" name="category" value={form.category} onChange={change} placeholder="Category" /><input className="field" type="file" accept="image/*" onChange={e => setCoverImage(e.target.files[0])} /></div><textarea className="field min-h-[20rem] leading-7" name="content" value={form.content} onChange={change} placeholder="Start writing..." required />{error && <p className="text-sm text-red-600">{error}</p>}<button className="btn-primary">{editing ? 'Save changes' : 'Publish story'}</button></form></div>;
+}

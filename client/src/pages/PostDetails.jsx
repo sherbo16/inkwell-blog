@@ -1,0 +1,14 @@
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import api from '../lib/api';
+import { useAuth } from '../context/AuthContext';
+
+export default function PostDetails() {
+  const { id } = useParams(); const { user } = useAuth(); const navigate = useNavigate(); const [post, setPost] = useState(null); const [comment, setComment] = useState(''); const [error, setError] = useState('');
+  const load = () => api.get(`/posts/${id}`).then(({ data }) => setPost(data.post)).catch(() => navigate('/'));
+  useEffect(load, [id]);
+  if (!post) return <div className="py-20 text-center">Loading story...</div>;
+  const remove = async () => { if (confirm('Delete this story?')) { await api.delete(`/posts/${id}`); navigate('/'); } };
+  const addComment = async (e) => { e.preventDefault(); try { const { data } = await api.post(`/posts/${id}/comments`, { body: comment }); setPost(data.post); setComment(''); } catch (err) { setError(err.response?.data?.message || 'Please log in to comment.'); } };
+  return <article className="mx-auto max-w-3xl"><Link to="/" className="text-sm font-bold text-coral">← Back to stories</Link><p className="mt-10 text-sm font-bold uppercase tracking-widest text-coral">{post.category}</p><h1 className="mt-3 font-display text-5xl leading-tight sm:text-7xl">{post.title}</h1><div className="mt-5 flex items-center justify-between text-sm text-slate-500"><span>By {post.author?.name}</span><span>{new Date(post.createdAt).toLocaleDateString()}</span></div>{post.coverImage && <img className="mt-10 max-h-[30rem] w-full rounded-3xl object-cover" src={`${import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000'}${post.coverImage}`} alt="" />}<div className="prose prose-lg mt-10 max-w-none whitespace-pre-wrap leading-8 text-slate-700">{post.content}</div>{user?._id === post.author?._id && <div className="mt-10 flex gap-3"><Link className="btn-secondary" to={`/edit/${id}`}>Edit story</Link><button className="btn-secondary text-red-600" onClick={remove}>Delete</button></div>}<section className="mt-16 border-t border-slate-200 pt-8"><h2 className="font-display text-3xl">Conversation ({post.comments.length})</h2>{user ? <form onSubmit={addComment} className="mt-5 flex gap-3"><input className="field flex-1" value={comment} onChange={e => setComment(e.target.value)} placeholder="Add to the conversation..." /> <button className="btn-primary">Post</button></form> : <p className="mt-4 text-slate-500"><Link className="text-coral" to="/login">Log in</Link> to leave a comment.</p>}{error && <p className="mt-2 text-sm text-red-600">{error}</p>}<div className="mt-8 space-y-5">{post.comments.map(c => <div key={c._id} className="rounded-2xl bg-white p-5"><p className="font-bold">{c.author?.name}</p><p className="mt-2 text-slate-600">{c.body}</p></div>)}</div></section></article>;
+}

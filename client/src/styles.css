@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display:ital@0;1&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base { body { @apply font-sans antialiased; } }
+@layer components {
+  .container { @apply mx-auto w-full max-w-6xl px-5 sm:px-8; }
+  .nav-link { @apply transition hover:text-coral; }
+  .btn-primary { @apply inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-bold text-white transition hover:bg-coral; }
+  .btn-secondary { @apply inline-flex items-center gap-2 rounded-full border border-slate-200 px-5 py-3 text-sm font-bold transition hover:border-coral hover:text-coral; }
+  .btn-ghost { @apply rounded-full p-3 transition hover:bg-white hover:text-coral; }
+  .field { @apply w-full rounded-2xl border-0 bg-slate-50 px-4 py-3 outline-none ring-1 ring-slate-200 transition focus:bg-white focus:ring-coral; }
+}
